@@ -1,0 +1,602 @@
+[
+ {
+  "file": "candidates/footstep-grass__footstep_grass_000.ogg",
+  "role": "footstep grass",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-grass__footstep_grass_001.ogg",
+  "role": "footstep grass",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-grass__footstep_grass_002.ogg",
+  "role": "footstep grass",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-grass__footstep_grass_003.ogg",
+  "role": "footstep grass",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-grass__footstep_grass_004.ogg",
+  "role": "footstep grass",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-dirt__footstep_carpet_000.ogg",
+  "role": "footstep dirt",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-dirt__footstep_carpet_001.ogg",
+  "role": "footstep dirt",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-dirt__footstep_carpet_002.ogg",
+  "role": "footstep dirt",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-dirt__footstep00.ogg",
+  "role": "footstep dirt",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/footstep-dirt__footstep02.ogg",
+  "role": "footstep dirt",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/footstep-dirt__footstep05.ogg",
+  "role": "footstep dirt",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/footstep-stone__footstep_concrete_000.ogg",
+  "role": "footstep stone",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-stone__footstep_concrete_001.ogg",
+  "role": "footstep stone",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-stone__footstep_concrete_002.ogg",
+  "role": "footstep stone",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-stone__footstep_concrete_003.ogg",
+  "role": "footstep stone",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-wood__footstep_wood_000.ogg",
+  "role": "footstep wood",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-wood__footstep_wood_001.ogg",
+  "role": "footstep wood",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-wood__footstep_wood_002.ogg",
+  "role": "footstep wood",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/footstep-wood__footstep_wood_003.ogg",
+  "role": "footstep wood",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/jump__cloth1.ogg",
+  "role": "jump",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/jump__cloth2.ogg",
+  "role": "jump",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/jump__clothBelt.ogg",
+  "role": "jump",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/land__impactSoft_medium_000.ogg",
+  "role": "land",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/land__impactSoft_medium_001.ogg",
+  "role": "land",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/land__impactSoft_medium_002.ogg",
+  "role": "land",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-cast__pluck_001.ogg",
+  "role": "bolt cast",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-cast__pluck_002.ogg",
+  "role": "bolt cast",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-cast__confirmation_001.ogg",
+  "role": "bolt cast",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-cast__scroll_001.ogg",
+  "role": "bolt cast",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-cast__drawKnife1.ogg",
+  "role": "bolt cast",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/bolt-hit__impactPunch_medium_000.ogg",
+  "role": "bolt hit",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-hit__impactPunch_medium_001.ogg",
+  "role": "bolt hit",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-hit__impactSoft_heavy_000.ogg",
+  "role": "bolt hit",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-hit__impactSoft_heavy_001.ogg",
+  "role": "bolt hit",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-splash__impactGlass_light_000.ogg",
+  "role": "bolt splash",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-splash__impactGlass_light_001.ogg",
+  "role": "bolt splash",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-splash__impactMetal_light_000.ogg",
+  "role": "bolt splash",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-splash__impactPlate_light_000.ogg",
+  "role": "bolt splash",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-pop__tick_001.ogg",
+  "role": "bolt pop",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-pop__tick_002.ogg",
+  "role": "bolt pop",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-pop__drop_001.ogg",
+  "role": "bolt pop",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bolt-pop__drop_002.ogg",
+  "role": "bolt pop",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/player-hurt__impactPunch_heavy_000.ogg",
+  "role": "player hurt",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/player-hurt__impactPunch_heavy_001.ogg",
+  "role": "player hurt",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/player-hurt__impactSoft_heavy_002.ogg",
+  "role": "player hurt",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/player-fall__dropLeather.ogg",
+  "role": "player fall",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/player-fall__impactSoft_heavy_003.ogg",
+  "role": "player fall",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/player-fall__impactSoft_heavy_004.ogg",
+  "role": "player fall",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/heal__bong_001.ogg",
+  "role": "heal",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/heal__confirmation_002.ogg",
+  "role": "heal",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/heal__maximize_001.ogg",
+  "role": "heal",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/heal__question_001.ogg",
+  "role": "heal",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/chess-piece__impactWood_light_000.ogg",
+  "role": "chess piece",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/chess-piece__impactWood_light_001.ogg",
+  "role": "chess piece",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/chess-piece__impactWood_light_002.ogg",
+  "role": "chess piece",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/chess-piece__click1.ogg",
+  "role": "chess piece",
+  "source": "kenney.nl ui-audio · CC0"
+ },
+ {
+  "file": "candidates/chess-piece__click_001.ogg",
+  "role": "chess piece",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/chess-piece__impactPlank_medium_000.ogg",
+  "role": "chess piece",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/note-pin__bookFlip1.ogg",
+  "role": "note pin",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/note-pin__bookFlip2.ogg",
+  "role": "note pin",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/note-pin__bookFlip3.ogg",
+  "role": "note pin",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/note-pin__bookPlace1.ogg",
+  "role": "note pin",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/note-pin__bookPlace2.ogg",
+  "role": "note pin",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/board-open__bookOpen.ogg",
+  "role": "board open",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/board-open__bookClose.ogg",
+  "role": "board open",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/board-open__handleSmallLeather.ogg",
+  "role": "board open",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/door__doorOpen_1.ogg",
+  "role": "door",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/door__doorOpen_2.ogg",
+  "role": "door",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/door__doorClose_1.ogg",
+  "role": "door",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/door__doorClose_2.ogg",
+  "role": "door",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/door__creak1.ogg",
+  "role": "door",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/door__creak2.ogg",
+  "role": "door",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/dig__impactMining_000.ogg",
+  "role": "dig",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/dig__impactMining_001.ogg",
+  "role": "dig",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/dig__impactMining_002.ogg",
+  "role": "dig",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/dig__chop.ogg",
+  "role": "dig",
+  "source": "kenney.nl rpg-audio · CC0"
+ },
+ {
+  "file": "candidates/stone-place__impactPlank_medium_001.ogg",
+  "role": "stone place",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/stone-place__impactWood_heavy_000.ogg",
+  "role": "stone place",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/stone-place__impactWood_heavy_001.ogg",
+  "role": "stone place",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__click_001.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__click_002.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__click_003.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__switch1.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl ui-audio · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__switch2.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl ui-audio · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__mouseclick1.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl ui-audio · CC0"
+ },
+ {
+  "file": "candidates/ui-tap__select_001.ogg",
+  "role": "ui tap",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/say__tick_004.ogg",
+  "role": "say",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/say__rollover1.ogg",
+  "role": "say",
+  "source": "kenney.nl ui-audio · CC0"
+ },
+ {
+  "file": "candidates/say__select_002.ogg",
+  "role": "say",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-start__impactBell_heavy_000.ogg",
+  "role": "round start",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-start__bong_001.ogg",
+  "role": "round start",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-start__question_002.ogg",
+  "role": "round start",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-win__confirmation_003.ogg",
+  "role": "round win",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-win__confirmation_004.ogg",
+  "role": "round win",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-win__impactBell_heavy_001.ogg",
+  "role": "round win",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-win__maximize_005.ogg",
+  "role": "round win",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-snort__impactSoft_heavy_003.ogg",
+  "role": "bull snort",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-snort__scratch_001.ogg",
+  "role": "bull snort",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-snort__scratch_002.ogg",
+  "role": "bull snort",
+  "source": "kenney.nl interface-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-charge__impactSoft_heavy_004.ogg",
+  "role": "bull charge",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-charge__impactPunch_heavy_002.ogg",
+  "role": "bull charge",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-gore__impactPunch_heavy_003.ogg",
+  "role": "bull gore",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/bull-gore__impactPunch_heavy_004.ogg",
+  "role": "bull gore",
+  "source": "kenney.nl impact-sounds · CC0"
+ },
+ {
+  "file": "candidates/cat-meow__cat_mewfood.ogg",
+  "role": "cat meow",
+  "source": "opengameart.org cat-purr-meow · CC0"
+ },
+ {
+  "file": "candidates/cat-meow__cat_mewpurr.ogg",
+  "role": "cat meow",
+  "source": "opengameart.org cat-purr-meow · CC0"
+ },
+ {
+  "file": "candidates/cat-meow__cat_mewpurr2.ogg",
+  "role": "cat meow",
+  "source": "opengameart.org cat-purr-meow · CC0"
+ },
+ {
+  "file": "candidates/cat-purr__cat_purrsleepy_loop.ogg",
+  "role": "cat purr",
+  "source": "opengameart.org cat-purr-meow · CC0"
+ },
+ {
+  "file": "candidates/cat-meow__kitten_mew-1.ogg",
+  "role": "cat meow",
+  "source": "opengameart.org kitten-mew · CC0"
+ },
+ {
+  "file": "candidates/cat-meow__Meow.ogg",
+  "role": "cat meow",
+  "source": "opengameart.org meow · CC0"
+ },
+ {
+  "file": "candidates/sheep__sheep_baa.ogg",
+  "role": "sheep",
+  "source": "opengameart.org sheep-baa · CC0"
+ },
+ {
+  "file": "candidates/nova-burst__explosionCrunch_001.mp3",
+  "role": "nova burst",
+  "source": "kenney.nl sci-fi-sounds · CC0"
+ },
+ {
+  "file": "candidates/round-win__bell_arpeggio.mp3",
+  "role": "round win",
+  "source": "opengameart.org (user) · CC0"
+ },
+ {
+  "file": "candidates/floater-death__teleport.mp3",
+  "role": "floater death",
+  "source": "opengameart.org WolfTech, Teleport · CC0"
+ },
+ {
+  "file": "candidates/notice__glass_tick.mp3",
+  "role": "notice",
+  "source": "opengameart.org · CC0 (the webinar overlay wisp pick)"
+ },
+ {
+  "file": "candidates/footstep-water__sfx100v2_footstep_wet_02.ogg",
+  "role": "footstep water",
+  "source": "opengameart.org geekygnome, 100 CC0 SFX #2 · CC0"
+ },
+ {
+  "file": "candidates/footstep-water__sfx100v2_footstep_wet_03.ogg",
+  "role": "footstep water",
+  "source": "opengameart.org geekygnome, 100 CC0 SFX #2 · CC0"
+ },
+ {
+  "file": "candidates/splash__splash_02.ogg",
+  "role": "splash",
+  "source": "opengameart.org rockseller, 40 CC0 water / splash / slime SFX · CC0"
+ },
+ {
+  "file": "candidates/splash__splash_12.ogg",
+  "role": "splash",
+  "source": "opengameart.org rockseller, 40 CC0 water / splash / slime SFX · CC0"
+ },
+ {
+  "file": "candidates/swim__splash_03.ogg",
+  "role": "swim",
+  "source": "opengameart.org rockseller, 40 CC0 water / splash / slime SFX · CC0"
+ },
+ {
+  "file": "candidates/swim__splash_14.ogg",
+  "role": "swim",
+  "source": "opengameart.org rockseller, 40 CC0 water / splash / slime SFX · CC0"
+ }
+]

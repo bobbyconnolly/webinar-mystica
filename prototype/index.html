@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mystica Pixel Pipeline</title>
+<!-- installable as a web app: launched from the home screen there is no address bar at all -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#100e0b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mystica">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #100e0b;
+    --panel: #1e1914;
+    --line: #3b3127;
+    --line-strong: #5a4b3a;
+    --text: #e8dcc4;
+    --muted: #9c8d75;
+    --accent: #d9a441;
+    --accent-ink: #1a1206;
+    --track: #2c2419;
+  }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font: 12px/1.45 "IBM Plex Mono", ui-monospace, Consolas, "Courier New", monospace;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    /* a game, not a document: no grey tap box behind a button, no selection box around a label, no
+       long-press menu. The three places you type opt back in below. */
+    -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  #welcome input, #chat, #board textarea { user-select: text; -webkit-user-select: text; }
+  :focus:not(:focus-visible) { outline: none; }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--ground); }
+  canvas#c { display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; touch-action: none; user-select: none; -webkit-user-select: none; }
+  canvas#c.walk { cursor: default; }
+
+  /* collapse toggles for the two overlays */
+  .toggle {
+    position: fixed; z-index: 2; padding: 5px 9px; background: rgba(30,25,20,0.92); color: var(--text);
+    border: 1px solid var(--line-strong); font: inherit; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+    touch-action: manipulation;
+  }
+  .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  #panel-toggle { top: 12px; right: 12px; }
+  #keys-toggle { bottom: 12px; left: 12px; }
+  #panel:not([hidden]) ~ #panel-toggle { right: 296px; }
+  #keys:not([hidden]) ~ #keys-toggle { display: none; }
+  @media (max-width: 700px) { #panel { width: min(272px, calc(100vw - 24px)); } #panel:not([hidden]) ~ #panel-toggle { right: 12px; top: auto; bottom: 12px; } }
+
+  /* top-left stats */
+  #stats {
+    position: fixed; top: 12px; left: 12px;
+    display: flex; gap: 14px; align-items: baseline;
+    padding: 6px 10px; background: rgba(30,25,20,0.88); border: 1px solid var(--line);
+    font-variant-numeric: tabular-nums; color: var(--muted); pointer-events: none;
+  }
+  #stats b { color: var(--text); font-weight: 500; }
+  #stats .mode { color: var(--accent); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* bottom-left key legend */
+  #keys {
+    position: fixed; left: 12px; bottom: 12px;
+    display: grid; grid-template-columns: auto auto; gap: 2px 12px;
+    padding: 8px 10px; background: rgba(30,25,20,0.88); border: 1px solid var(--line);
+    color: var(--muted); pointer-events: none;
+  }
+  #keys kbd {
+    font: inherit; color: var(--text); background: var(--track); border: 1px solid var(--line-strong);
+    padding: 0 5px; border-radius: 2px; white-space: nowrap;
+  }
+
+  /* right panel */
+  #panel {
+    position: fixed; top: 12px; right: 12px; width: 272px;
+    max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box;
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 10px 14px 14px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
+  }
+  #panel[hidden] { display: none; }
+  #panel h1 { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin: 2px 0 10px; color: var(--text); }
+  #panel h1 small { color: var(--muted); font-weight: 400; letter-spacing: 0; text-transform: none; margin-left: 8px; }
+  #panel section { border-top: 1px solid var(--line); padding: 8px 0 4px; }
+  #panel h2 { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+  .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 8px; padding: 3px 0; }
+  .row > span { color: var(--text); }
+  .row output { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 4.5ch; text-align: right; }
+  .row input[type=range] { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: var(--accent); height: 18px; }
+  .row input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
+  .row.disabled { opacity: 0.4; }
+  .seg { display: flex; gap: 0; border: 1px solid var(--line-strong); margin: 4px 0 6px; }
+  .seg button { flex: 1; background: transparent; color: var(--muted); border: 0; padding: 5px 0; font: inherit; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line-strong); }
+  .seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .seg button:focus-visible, #panel button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .btn { width: 100%; margin-top: 6px; background: var(--track); color: var(--text); border: 1px solid var(--line-strong); padding: 5px 0; font: inherit; cursor: pointer; }
+  .btn:hover { border-color: var(--accent); }
+  .hint { color: var(--muted); margin: 4px 0 0; }
+
+  /* touch layer: floating stick on the left, action buttons on the right */
+  #touch { position: fixed; inset: 0; pointer-events: none; z-index: 1; -webkit-touch-callout: none; }
+  #touch[hidden] { display: none; }
+  #stick-zone { position: absolute; left: 0; top: 0; bottom: 0; width: 45%; pointer-events: auto; touch-action: none; }
+  #stick {
+    position: absolute; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 50%;
+    border: 2px solid var(--line-strong); background: rgba(30,25,20,0.45); pointer-events: none;
+  }
+  #stick[hidden] { display: none; }
+  #stick-knob {
+    position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--accent-ink); opacity: 0.92;
+  }
+  #tbtns {
+    position: absolute; right: 18px; bottom: 22px; display: grid; grid-template-columns: 64px 64px; grid-auto-rows: 64px; gap: 12px;
+    pointer-events: auto; touch-action: none; align-items: end;
+  }
+  .tb {
+    width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--line-strong); background: rgba(30,25,20,0.82); color: var(--text);
+    font: inherit; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; cursor: pointer; touch-action: none;
+    user-select: none; -webkit-user-select: none;
+  }
+  .tb.big { width: 88px; height: 88px; grid-column: 2; justify-self: end; font-size: 13px; }
+  .tb.on { background: var(--accent); color: var(--accent-ink); }
+  .tb[hidden] { display: none; }
+  .tb:active { transform: scale(0.94); }
+  /* touch mode: only the controls, and faint. Once learned they are muscle memory, not information. */
+  body.touchmode #stats, body.touchmode #keys, body.touchmode #keys-toggle, body.touchmode #panel, body.touchmode #panel-toggle { display: none !important; }
+  /* the same before any script has run: a phone must never see the desktop furniture flash on first paint */
+  @media (pointer: coarse) {
+    #stats, #keys, #keys-toggle, #panel, #panel-toggle { display: none !important; }
+    #welcome .hint-desk { display: none !important; } #welcome .hint-touch { display: grid; }
+  }
+  body.touchmode .tb { background: rgba(30,25,20,0.26); border-color: rgba(90,75,58,0.45); color: rgba(232,220,196,0.5); }
+  body.touchmode .tb.on { background: rgba(217,164,65,0.32); border-color: rgba(217,164,65,0.45); color: rgba(232,220,196,0.75); }
+  body.touchmode .tb:active { background: rgba(217,164,65,0.45); }
+  body.touchmode #stick { background: rgba(30,25,20,0.16); border-color: rgba(90,75,58,0.35); }
+  body.touchmode #stick-knob { opacity: 0.4; border-color: transparent; }
+  /* landscape phones only: cycles view presets while the UO projection's depth problem is evaluated */
+  #tb-view { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: calc(18px + env(safe-area-inset-right, 0px)); width: 56px; height: 36px; border-radius: 18px; font-size: 10px; pointer-events: auto; }
+  #tb-full { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); left: calc(18px + env(safe-area-inset-left, 0px)); width: 56px; height: 36px; border-radius: 18px; font-size: 10px; pointer-events: auto; }
+  #tbtns { right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+
+  /* names and speech over heads, positioned from the 3D scene each frame */
+  #labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+  .lbl { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); text-align: center; white-space: nowrap; }
+  .lbl .nm { font-size: 11px; color: var(--text); text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000; }
+  .lbl .say { display: block; margin-bottom: 2px; max-width: 260px; white-space: normal; font-size: 12px; color: #fff; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000; }
+  .lbl .say[hidden] { display: none; }
+  #chat-wrap { position: fixed; left: 50%; bottom: 120px; transform: translateX(-50%); width: min(480px, 86vw); display: flex; gap: 6px; z-index: 3; }
+  #chat-wrap[hidden] { display: none; }
+  #chat { flex: 1; min-width: 0; background: rgba(30,25,20,0.92); color: var(--text); border: 1px solid var(--accent); padding: 10px; font: inherit; font-size: 16px; }
+  #chat-send { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); padding: 0 16px; font: inherit; font-weight: 600; cursor: pointer; }
+  .lbl .unheard { display: block; font-size: 10px; font-style: italic; color: var(--muted); text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000; }
+  .lbl .unheard[hidden] { display: none; }
+  .lbl .nm.away { color: var(--muted); }
+  #tb-say { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); width: 56px; height: 36px; border-radius: 18px; font-size: 10px; pointer-events: auto; }
+  #tb-sound { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); left: calc(82px + env(safe-area-inset-left, 0px)); width: 56px; height: 36px; border-radius: 18px; font-size: 10px; pointer-events: auto; }
+  #tb-sound.on { background: var(--track); color: var(--muted); } /* muted: dimmed, not lit */
+
+  /* welcome card: the first thing a new player sees, instead of a browser prompt */
+  #welcome { position: fixed; inset: 0; z-index: 6; display: grid; place-items: center; background: rgba(16,14,11,0.78); }
+  #welcome[hidden] { display: none; }
+  #welcome .card { width: min(92vw, 440px); background: var(--panel); border: 1px solid var(--line-strong); padding: 18px 20px 20px; box-sizing: border-box; display: grid; gap: 12px; }
+  #welcome h1 { margin: 0; font-size: 18px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  #welcome p { margin: 0; color: var(--muted); line-height: 1.5; }
+  #welcome p b { color: var(--text); font-weight: 500; }
+  #welcome label { display: grid; gap: 6px; color: var(--text); }
+  #welcome input { background: rgba(16,14,11,0.9); color: var(--text); border: 1px solid var(--line-strong); padding: 10px; font: inherit; font-size: 16px; }
+  #welcome input:focus { outline: none; border-color: var(--accent); }
+  #welcome .controls { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; color: var(--muted); }
+  #welcome .controls kbd { font: inherit; color: var(--text); background: var(--track); border: 1px solid var(--line-strong); padding: 0 6px; border-radius: 2px; white-space: nowrap; justify-self: start; }
+  #welcome button { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); padding: 12px 0; font: inherit; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  #welcome .hint-touch, #welcome .hint-desk { display: none; }
+  body.touchmode #welcome .hint-touch { display: grid; }
+  body:not(.touchmode) #welcome .hint-desk { display: grid; }
+
+  /* notice board overlay: parchment notes on dark wood */
+  #board {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4;
+    background: var(--panel); border: 1px solid var(--line-strong); padding: 10px 12px 12px; width: min(92vw, 420px); max-height: 86vh; box-sizing: border-box;
+    display: grid; grid-template-rows: auto 1fr auto auto; gap: 8px;
+  }
+  #board[hidden] { display: none; }
+  #board .board-head { font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  #board .notes { overflow-y: auto; display: grid; gap: 6px; min-height: 80px; max-height: 50vh; scrollbar-width: thin; }
+  #board .note { background: #d9c9a8; color: #2a1e12; padding: 8px 10px; font-size: 13px; line-height: 1.4; border: 1px solid #a89262; box-shadow: 2px 2px 0 #3b3127; }
+  #board .note.empty { color: #6b5a3c; font-style: italic; }
+  #board .note-by { margin-top: 4px; font-size: 11px; color: #6b5a3c; }
+  #board textarea { resize: none; background: rgba(30,25,20,0.9); color: var(--text); border: 1px solid var(--line-strong); padding: 8px; font: inherit; font-size: 14px; }
+  #board textarea:focus { outline: none; border-color: var(--accent); }
+  #board .ops { display: flex; gap: 6px; }
+  #board .ops button { flex: 1; background: var(--track); color: var(--text); border: 1px solid var(--line-strong); padding: 8px 0; font: inherit; cursor: pointer; }
+  #board .ops button[data-op=pin] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+
+  /* chess overlay */
+  #chess {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4;
+    background: var(--panel); border: 1px solid var(--line-strong); padding: 10px 12px 12px; width: min(92vw, 420px); box-sizing: border-box;
+    display: grid; gap: 8px; touch-action: manipulation;
+  }
+  #chess[hidden] { display: none; }
+  #chess .seats { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+  #chess .tray { min-height: 22px; font-size: 18px; line-height: 22px; color: var(--text); letter-spacing: 2px; }
+  #chess .cells { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); aspect-ratio: 1; width: 100%; border: 2px solid var(--line-strong); box-sizing: border-box; }
+  #chess .cell { border: 0; padding: 0; margin: 0; min-width: 0; min-height: 0; width: 100%; height: 100%; overflow: hidden; font-size: clamp(20px, 5.4vw, 30px); line-height: 1; cursor: pointer; font-family: "Segoe UI Symbol", "Noto Sans Symbols2", "DejaVu Sans", sans-serif; }
+  #chess .cell.light { background: #d9c9a8; } #chess .cell.dark { background: #7a6448; }
+  #chess .cell.last { box-shadow: inset 0 0 0 3px rgba(217,164,65,0.75); }
+  #chess .cell.from { box-shadow: inset 0 0 0 3px rgba(217,164,65,0.35); }
+  #chess .cell.sel { box-shadow: inset 0 0 0 3px var(--accent); }
+  #chess .cell.white { color: #fdfaf2; text-shadow: 0 0 2px #000, 0 0 2px #000; } #chess .cell.black { color: #15110c; }
+  #chess .cell:disabled { cursor: default; }
+  #chess .turn { font-weight: 600; }
+  #chess .turn.mine { color: var(--accent); }
+  #chess .moved { color: var(--muted); min-height: 1.2em; }
+  #chess .status { color: var(--muted); }
+  #chess .ops button.wide { flex-basis: 100%; font-weight: 600; }
+  #chess .ops { display: flex; gap: 6px; flex-wrap: wrap; }
+  #chess .ops button { flex: 1; min-width: 70px; background: var(--track); color: var(--text); border: 1px solid var(--line-strong); padding: 8px 0; font: inherit; cursor: pointer; }
+  #chess .ops button[hidden] { display: none; }
+  #chess .ops button:disabled { opacity: 0.5; cursor: default; }
+
+  /* the fight */
+  /* in the arena the spell takes the corner (closest to the thumb, portrait or landscape) and the
+     whole Jump/Dig/Zoom group slides one column inward */
+  #spells { position: absolute; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); pointer-events: auto; touch-action: none; }
+  #spells[hidden] { display: none; }
+  #spells .spell { position: relative; width: 88px; height: 88px; font-size: 13px; }
+  body.arena #tbtns { right: calc(122px + env(safe-area-inset-right, 0px)); }
+  #spells .spell .lbl { position: relative; z-index: 1; }
+  #spells .spell .ring { position: absolute; inset: -2px; border-radius: 50%; background: conic-gradient(rgba(16,14,11,0.75) calc(var(--cd, 0) * 1turn), transparent 0); pointer-events: none; }
+  #spells .spell.ready { border-color: var(--accent); }
+  #stick.creep #stick-knob { filter: brightness(0.55); } /* the knob dims while the stick asks for the creep */
+  /* the presenter's view (?watch=1): the round in a line and the session's leaderboard, sized for a screen shared at 720p; the HUD goes */
+  #watch { position: fixed; top: 18px; right: 18px; z-index: 2; width: 400px; background: rgba(30,25,20,0.88); border: 1px solid var(--line-strong); color: var(--text); font-size: 20px; line-height: 1.35; pointer-events: none; }
+  #watch[hidden] { display: none; }
+  #watch-line { padding: 12px 16px; font-size: 26px; color: var(--accent); border-bottom: 1px solid var(--line-strong); text-align: center; }
+  #watch-head, #watch-rows > div { display: grid; grid-template-columns: 34px 1fr 64px 64px 64px; padding: 4px 16px; align-items: baseline; }
+  #watch-head { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-top: 8px; }
+  #watch-head b, #watch-head span:not(.who):not(.n), #watch-rows > div b, #watch-rows > div span:not(.who):not(.n) { text-align: right; font-weight: inherit; }
+  #watch-rows > div b { color: var(--accent); font-weight: bold; }
+  #watch-rows .n { color: var(--muted); }
+  #watch-rows .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #watch-rows { padding-bottom: 8px; }
+  #watch-rows .empty { display: block; padding: 10px 16px 14px; color: var(--muted); }
+  body.watch #touch, body.watch #tbtns, body.watch #stats, body.watch #arena-arrow, body.watch #reticle, body.watch #keys, body.watch #panel, body.watch #chat-wrap, body.watch #keys-toggle, body.watch #panel-toggle, body.watch #spells, body.watch #welcome { display: none !important; }
+  body.watch canvas#c { cursor: grab; } body.watch.dragging canvas#c { cursor: grabbing; } /* the presenter's view: the ground is dragged */
+  #fight { position: fixed; top: calc(104px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 2; text-align: center; pointer-events: none; }
+  #fight[hidden] { display: none; }
+  #fight-board { background: rgba(30,25,20,0.9); border: 1px solid var(--line-strong); padding: 8px 14px; color: var(--text); font-size: 13px; text-align: left; }
+  #fight-board[hidden] { display: none; }
+  #fight-board b { color: var(--accent); }
+  #arena-arrow { position: fixed; top: calc(52px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: 6px; align-items: center; color: rgba(232,220,196,0.55); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; pointer-events: none; text-shadow: 0 1px 0 #000; }
+  #arena-arrow[hidden] { display: none; }
+  #arena-arrow-glyph { display: inline-block; font-size: 22px; transform: rotate(var(--rot, 0deg)); color: var(--accent); }
+  /* the lock: a reticle over what the arrow will fly at. Faint for the nearest monster in range, solid
+     for one you tapped, grey and dashed when it is out of range or behind cover */
+  #reticle { --rc: var(--accent); position: fixed; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border: 2px solid var(--rc); border-radius: 50%;
+    z-index: 2; pointer-events: none; opacity: 0.45; box-shadow: 0 0 0 1px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,0,0,0.55); }
+  #reticle::before, #reticle::after { content: ""; position: absolute; left: 50%; top: 50%; background: var(--rc); }
+  #reticle::before { width: 2px; height: 10px; margin: -5px 0 0 -1px; transform: translateY(-19px); box-shadow: 0 38px 0 var(--rc); }
+  #reticle::after { width: 10px; height: 2px; margin: -1px 0 0 -5px; transform: translateX(-19px); box-shadow: 38px 0 0 var(--rc); }
+  #reticle.hard { opacity: 1; }
+  #reticle.out { --rc: var(--muted); border-style: dashed; }
+  #reticle[hidden] { display: none; }
+  body:not(.touchmode) #spells { right: 18px; bottom: 22px; }
+  body:not(.touchmode).arena #tbtns { right: 122px; }
+  body.hit #stage { box-shadow: inset 0 0 0 8px rgba(212, 80, 72, 0.75); }
+
+  /* event message (a monster spawned, the round, a guard): near the top, just under the fight strip
+     and the top buttons, and above everything else on the page (Bobby 2026-10-17) */
+  #toast {
+    position: fixed; top: calc(60px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 20;
+    padding: 9px 15px; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 13px;
+    border: 1px solid var(--accent-ink); border-radius: 4px; pointer-events: none; text-align: center;
+    max-width: min(88vw, 520px); box-sizing: border-box; box-shadow: 0 3px 16px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.5);
+  }
+  #toast[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c" class="walk"></canvas></div>
+<div id="labels"></div>
+<div id="chess" hidden>
+  <div class="seats"><span class="seat-b">Black: empty seat</span><span class="seat-w">White: empty seat</span></div>
+  <div class="tray tray-b"></div>
+  <div class="cells"></div>
+  <div class="tray tray-w"></div>
+  <div class="turn"></div>
+  <div class="moved"></div>
+  <div class="status"></div>
+  <div class="ops">
+    <button type="button" data-op="sit">Sit</button>
+    <button type="button" data-op="turn" class="wide" hidden>Pass the turn</button>
+    <button type="button" data-op="back" hidden>Take back</button>
+    <button type="button" data-op="redo" hidden>Redo</button>
+    <button type="button" data-op="stand" hidden>Stand</button>
+    <button type="button" data-op="reset" hidden>Reset</button>
+    <button type="button" data-op="close">Close</button>
+  </div>
+</div>
+<div id="welcome" hidden>
+  <form class="card" id="welcome-form">
+    <h1>Mystica</h1>
+    <p>A small world you can walk, dig and fight in. Press <b>Enter</b> to talk; words only carry a short way. The rest is yours to find.</p>
+    <label>Your name <input id="welcome-name" type="text" maxlength="16" autocomplete="off" placeholder="What are you called?" required></label>
+    <div class="controls hint-desk">
+      <kbd>W A S D</kbd><span>walk · hold the right mouse button to steer · Shift runs · Space jumps</span>
+      <kbd>click</kbd><span>walk there, or use what you click: the board, the chessboard</span>
+      <kbd>Enter</kbd><span>say something</span>
+    </div>
+    <div class="controls hint-touch">
+      <kbd>left thumb</kbd><span>the stick appears where you touch · push far to run</span>
+      <kbd>right thumb</kbd><span>Jump · tap the world to walk there or use things</span>
+      <kbd>Arrow</kbd><span>in the arena: fires at the nearest foe, or the one you tapped</span>
+      <kbd>Say</kbd><span>at the top, to talk</span>
+    </div>
+    <button type="submit">Step in</button>
+  </form>
+</div>
+<div id="board" hidden>
+  <div class="board-head">Notice board</div>
+  <div class="notes"></div>
+  <textarea rows="2" maxlength="200" placeholder="Pin a note (Enter to pin)"></textarea>
+  <div class="ops">
+    <button type="button" data-op="pin">Pin</button>
+    <button type="button" data-op="close">Close</button>
+  </div>
+</div>
+<div id="chat-wrap" hidden>
+  <input id="chat" type="text" maxlength="120" placeholder="Say something" autocomplete="off" enterkeyhint="send">
+  <button type="button" id="chat-send">Send</button>
+</div>
+
+<div id="touch" hidden>
+  <div id="stick-zone"></div>
+  <div id="stick" hidden><div id="stick-knob"></div></div>
+  <div id="tbtns">
+    <button type="button" class="tb" id="tb-zoom">Zoom</button>
+    <button type="button" class="tb" id="tb-tool" hidden>Raise</button>
+    <button type="button" class="tb" id="tb-mode">Dig</button>
+    <button type="button" class="tb big" id="tb-jump">Jump</button>
+  </div>
+  <!-- the one spell, beside Jump, only shown inside the arena -->
+  <div id="spells" hidden>
+    <button type="button" class="tb spell big" id="sp-arrow" data-spell="1"><span class="ring"></span><span class="lbl">Arrow</span></button>
+  </div>
+  <button type="button" class="tb" id="tb-view" hidden>View</button>
+  <button type="button" class="tb" id="tb-full">Full</button>
+  <button type="button" class="tb" id="tb-sound">Sound</button>
+  <button type="button" class="tb" id="tb-say">Say</button>
+</div>
+
+<div id="stats">
+  <span class="mode" id="st-mode">walk</span>
+  <span><b id="st-res">640×360</b> @<b id="st-scale">3</b>×</span>
+  <span><b id="st-fps">0</b> fps</span>
+  <span>sculpted <b id="st-vol">0.0</b></span>
+  <span>ward <b id="st-ward">1.00 warded</b></span>
+  <span><b id="st-net">local</b></span>
+</div>
+<div id="toast" hidden></div>
+<!-- the fight: only the scoreboard when a round ends (the strip with the zone and the hearts went on
+     2026-10-17: the hearts float over a hurt player already, and the zone needs no label) -->
+<div id="fight" hidden>
+  <div id="fight-board" hidden></div>
+</div>
+<div id="arena-arrow" hidden><span id="arena-arrow-glyph">➜</span><span>arena</span></div>
+<!-- the presenter's view (?watch=1): the round in a line, the session's leaderboard under it -->
+<div id="watch" hidden>
+  <div id="watch-line">The ring is empty</div>
+  <div id="watch-head"><span class="n"></span><span class="who">who</span><b>wins</b><span>outs</span><span>hits</span></div>
+  <div id="watch-rows"><div class="empty">no blows yet</div></div>
+</div>
+<div id="reticle" hidden></div>
+
+<div id="keys">
+  <kbd>W A S D</kbd><span>move (360°)</span>
+  <kbd>Enter</kbd><span>say something</span>
+  <kbd>Shift</kbd><span>run</span>
+  <kbd>Space</kbd><span>jump</span>
+  <kbd>hold right</kbd><span>steer toward cursor, far = run</span>
+  <kbd>click</kbd><span id="k-click">walk there</span>
+  <kbd>Tab</kbd><span>walk / sculpt</span>
+  <kbd>1</kbd><span>magic arrow (in the arena)</span>
+  <kbd>click a foe</kbd><span>target it: arrows fly at the mark</span>
+  <kbd>1 2 3 4</kbd><span>sculpt tools (in sculpt mode)</span>
+  <kbd>wheel</kbd><span id="k-wheel">zoom</span>
+  <kbd>- =</kbd><span>zoom step</span>
+  <kbd>H</kbd><span>hide panel</span>
+  <kbd>K</kbd><span>hide this</span>
+</div>
+<button type="button" class="toggle" id="keys-toggle" aria-controls="keys">? keys</button>
+<!-- the touch layer is declared above the canvas overlays; this comment keeps the sibling order obvious -->
+
+
+<aside id="panel">
+  <h1>Pixel pipeline <small>gray-box</small></h1>
+
+  <section>
+    <h2>Pixels</h2>
+    <label class="row"><span>Pixel scale (zoom)</span><output>3×</output><input type="range" min="1" max="6" step="1" data-key="scale"></label>
+    <label class="row"><span>Tile width (UO = 44 px)</span><output>44</output><input type="range" min="24" max="72" step="2" data-key="tilePx"></label>
+    <label class="row"><span>Snap camera to pixel grid</span><input type="checkbox" data-key="snapCam"></label>
+    <label class="row"><span>Snap objects to pixel grid</span><input type="checkbox" data-key="snapObj"></label>
+  </section>
+
+  <section>
+    <h2>Sound</h2>
+    <label class="row"><span>Sound</span><input type="checkbox" data-key="sound"></label>
+    <p class="hint">CC0 clips picked in sounds/sounds-manifest.json; sounds/audition.html re-picks them.</p>
+  </section>
+
+  <section>
+    <h2>Camera</h2>
+    <div class="seg" id="proj">
+      <button type="button" data-proj="1">UO oblique</button>
+      <button type="button" data-proj="0">True ortho</button>
+    </div>
+    <label class="row" id="row-k"><span>Vertical scale (oblique)</span><output>1.00</output><input type="range" min="0.5" max="1.6" step="0.05" data-key="kVert"></label>
+    <label class="row" id="row-elev"><span>Elevation (ortho)</span><output>30°</output><input type="range" min="15" max="70" step="1" data-key="elev"></label>
+    <p class="hint">Oblique = top-down ground with height sheared upward: 1:1 diamonds like UO. Ortho at 30° gives classic 2:1 diamonds.</p>
+  </section>
+
+  <section>
+    <h2>Shading</h2>
+    <label class="row"><span>Palette ramps (6 steps)</span><input type="checkbox" data-key="ramps"></label>
+    <label class="row"><span>Ordered dither</span><output>1.00</output><input type="range" min="0" max="1" step="0.05" data-key="dither"></label>
+    <label class="row"><span>Surface speckle</span><output>0.60</output><input type="range" min="0" max="1" step="0.05" data-key="surfNoise"></label>
+    <label class="row"><span>Outlines (depth)</span><input type="checkbox" data-key="outline"></label>
+    <label class="row"><span>Crease lines (normals)</span><input type="checkbox" data-key="creases"></label>
+    <label class="row"><span>Night</span><output>0.00</output><input type="range" min="0" max="1" step="0.05" data-key="night"></label>
+    <label class="row"><span>Animation rate</span><output>10 fps</output><input type="range" min="4" max="60" step="1" data-key="animFps"></label>
+    <label class="row"><span>Cut away occluders</span><input type="checkbox" data-key="cutout"></label>
+  </section>
+
+  <section>
+    <h2>Movement</h2>
+    <label class="row"><span>Jump height (tiles)</span><output>1.10</output><input type="range" min="0.4" max="2.2" step="0.1" data-key="jumpH"></label>
+    <label class="row"><span>Swimming skill</span><input type="checkbox" data-key="swim"></label>
+    <p class="hint">Everything that blocks is a height. Step up to 0.4, jump the rest; walls (2.6) never. Fence 0.8, crate 0.6, table 0.9. Slopes over 45° block, and loose earth slumps to 38°, so only stone-faced banks stop anyone. Water slows past 0.4 deep and blocks past 1.2 without the skill. Deer hop fences, sheep don't.</p>
+  </section>
+
+  <section>
+    <h2>Sculpt</h2>
+    <div class="seg" id="modeseg">
+      <button type="button" data-mode="walk">Walk</button>
+      <button type="button" data-mode="sculpt">Sculpt</button>
+    </div>
+    <div class="seg" id="toolseg">
+      <button type="button" data-tool="raise">Raise</button>
+      <button type="button" data-tool="lower">Lower</button>
+      <button type="button" data-tool="stone">Stone</button>
+      <button type="button" data-tool="clear">Clear</button>
+    </div>
+    <label class="row"><span>Brush radius</span><output>3.0</output><input type="range" min="1" max="7" step="0.5" data-key="brushR"></label>
+    <label class="row"><span>Angle of repose</span><output>38°</output><input type="range" min="20" max="60" step="1" data-key="repose"></label>
+    <button type="button" class="btn" id="reset">Reset terrain</button>
+    <p class="hint">Left drag applies the tool, right drag always lowers. Disturbed earth steeper than the angle of repose slumps until it is stable. Stone facing holds a slope. Nothing ever reverts on its own.</p>
+  </section>
+
+  <section>
+    <h2>Town</h2>
+    <label class="row"><span>Ward strength (presence + economy)</span><output>1.00</output><input type="range" min="0" max="1" step="0.05" data-key="ward"></label>
+    <label class="row"><span>Facing (0° = east)</span><output>0°</output><input type="range" min="0" max="345" step="15" data-key="facing"></label>
+    <p class="hint">The ward is a lobe: short behind the town, long ahead. Pale stones mark the threshold. Digging inside brings guards; near the fringe they take longer. Lower the strength to watch warded land shrink from the edges in.</p>
+  </section>
+</aside>
+<button type="button" class="toggle" id="panel-toggle" aria-controls="panel">settings</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="shaders.js"></script>
+<script src="sim.js"></script>
+<script src="net.js"></script>
+<script src="sounds.js"></script>
+<script src="chess.js"></script>
+<script src="board.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

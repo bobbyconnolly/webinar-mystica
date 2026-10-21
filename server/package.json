@@ -1,0 +1,13 @@
+{
+  "name": "mystica-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Authoritative game server for the Mystica prototype: runs prototype/sim.js, serves the client.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

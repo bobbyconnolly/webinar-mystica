@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mystica Sound Audition</title>
+<style>
+  :root { --ground: #100e0b; --panel: #1e1914; --line: #3b3127; --line-strong: #5a4b3a; --text: #e8dcc4; --muted: #9c8d75; --accent: #d9a441; --accent-ink: #1a1206; --track: #2c2419; --good: #78a448; --warn: #d45048; }
+  html, body { margin: 0; background: var(--ground); color: var(--text); font: 13px/1.5 "IBM Plex Mono", ui-monospace, Consolas, monospace; }
+  header { padding: 16px 20px 10px; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+  h1 { margin: 0; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  header p { margin: 0; color: var(--muted); max-width: 72ch; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .bar label { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); }
+  input[type=range] { accent-color: var(--accent); width: 160px; }
+  select, input[type=text], input[type=url] { background: var(--track); color: var(--text); border: 1px solid var(--line-strong); padding: 4px 6px; font: inherit; }
+  button { background: var(--track); color: var(--text); border: 1px solid var(--line-strong); padding: 5px 10px; font: inherit; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:hover { border-color: var(--accent); }
+  #drop { margin: 14px 20px; padding: 26px; border: 2px dashed var(--line-strong); text-align: center; color: var(--muted); cursor: pointer; }
+  #drop.over { border-color: var(--accent); color: var(--text); }
+  table { width: calc(100% - 40px); margin: 0 20px 30px; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
+  td.num { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+  td.name { max-width: 26ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr.playing td.name { color: var(--accent); }
+  .meter { display: inline-block; width: 90px; height: 8px; background: var(--track); vertical-align: middle; margin-right: 6px; }
+  .meter i { display: block; height: 100%; background: var(--good); }
+  .meter i.hot { background: var(--warn); }
+  .stars button { padding: 0 3px; border: 0; background: none; color: var(--line-strong); font-size: 15px; }
+  .stars button.on { color: var(--accent); }
+  td input[type=text] { width: 100%; box-sizing: border-box; }
+  .hint { color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sound audition</h1>
+  <p>Drop candidate sounds here, hear them at a common loudness, hear them the way the game will use them, rate them, and export a manifest the game reads. Nothing leaves this page; ratings are remembered in this browser.</p>
+  <div class="bar">
+    <label>Target loudness <input id="target" type="range" min="-30" max="-10" step="1" value="-18"> <b id="target-v">-18 dBFS RMS</b></label>
+    <label><input id="norm" type="checkbox" checked> normalise on play</label>
+    <label><input id="lowpass" type="checkbox" checked> soften (8 kHz low-pass, the UO warmth)</label>
+    <label><input id="vary" type="checkbox" checked> vary pitch ±5% (as the game will)</label>
+    <label>Master <input id="master" type="range" min="0" max="1" step="0.05" value="0.8"></label>
+    <button id="export" class="primary">Export manifest</button>
+    <button id="stop">Stop all</button>
+  </div>
+</header>
+<div id="drop">Drop audio files here, or click to choose (wav, ogg, mp3, flac). Folders work too.<input id="file" type="file" multiple accept="audio/*" hidden></div>
+<table>
+  <thead><tr><th>Play</th><th>File</th><th>Length</th><th>Loudness</th><th>Gain</th><th>Role</th><th>Rating</th><th>Source / licence</th><th>Notes</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<div id="manifest-wrap" style="margin: 0 20px 20px" hidden>
+  <p class="hint">The manifest, copied to the clipboard where allowed. Paste it into <code>prototype/sounds/sounds-manifest.json</code>.</p>
+  <textarea id="manifest" rows="10" style="width: 100%; box-sizing: border-box; background: var(--track); color: var(--text); border: 1px solid var(--line-strong); font: inherit; font-size: 12px; padding: 8px"></textarea>
+</div>
+<p class="hint" style="margin: 0 20px 30px">Loudness is RMS over the whole file in dBFS; peak is the bar (red past -1 dBFS after gain). The footstep roles play four times at walking cadence so you hear what repetition sounds like. Export writes <code>sounds-manifest.json</code>: file, role, gain, rating, source, notes. Put chosen files under <code>prototype/sounds/</code> and the manifest beside them; the game applies the gains at play time.</p>
+<script>
+(function () {
+  'use strict';
+  var ROLES = ['', 'footstep grass', 'footstep dirt', 'footstep stone', 'footstep wood', 'jump', 'land', 'cat meow', 'cat purr', 'sheep', 'deer', 'bull snort', 'bull charge', 'bull gore', 'bull death', 'bolt cast', 'bolt hit', 'bolt splash', 'bolt pop', 'player hurt', 'player fall', 'heal', 'chess piece', 'note pin', 'board open', 'door', 'dig', 'stone place', 'ui tap', 'say', 'round start', 'round win', 'ambient day', 'ambient night', 'wind', 'birds', 'water'];
+  var ctx = null, master = null, items = [], playing = [];
+  var $ = function (id) { return document.getElementById(id); };
+  var saved = {}; try { saved = JSON.parse(localStorage.getItem('mystica-sound-audition') || '{}'); } catch (e) {}
+  function save() { var o = {}; items.forEach(function (it) { o[it.name] = { role: it.role, rating: it.rating, source: it.source, notes: it.notes }; }); try { localStorage.setItem('mystica-sound-audition', JSON.stringify(o)); } catch (e) {} }
+  function audio() {
+    if (ctx) return ctx;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = +$('master').value; master.connect(ctx.destination);
+    return ctx;
+  }
+  function db(x) { return 20 * Math.log10(Math.max(x, 1e-9)); }
+  function analyse(buf) {
+    var n = buf.length, ch = buf.numberOfChannels, sum = 0, peak = 0;
+    for (var c = 0; c < ch; c++) { var d = buf.getChannelData(c); for (var i = 0; i < n; i++) { var v = d[i]; sum += v * v; if (v > peak) peak = v; if (-v > peak) peak = -v; } }
+    return { rms: db(Math.sqrt(sum / (n * ch))), peak: db(peak) };
+  }
+  function gainFor(it) { return Math.pow(10, (+$('target').value - it.rms) / 20); }
+  function play(it, opts) {
+    opts = opts || {};
+    var c = audio(); if (c.state === 'suspended') c.resume();
+    var src = c.createBufferSource(); src.buffer = it.buffer;
+    if ($('vary').checked) src.playbackRate.value = 1 + (Math.random() - 0.5) * 0.1 + (opts.rate || 0);
+    var g = c.createGain(); g.gain.value = $('norm').checked ? Math.min(gainFor(it), Math.pow(10, (-1 - it.peak) / 20)) : 1;
+    var node = src; node.connect(g);
+    if ($('lowpass').checked) { var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 8000; lp.Q.value = 0.5; g.connect(lp); lp.connect(master); } else g.connect(master);
+    src.start(c.currentTime + (opts.delay || 0));
+    playing.push(src); src.onended = function () { playing = playing.filter(function (s) { return s !== src; }); if (it.row) it.row.classList.remove('playing'); };
+    if (it.row) it.row.classList.add('playing');
+  }
+  function playRole(it) { // footsteps repeat at walking cadence; everything else plays once
+    if (/footstep/.test(it.role)) for (var i = 0; i < 4; i++) play(it, { delay: i * 0.42, rate: (i % 2 ? 0.03 : -0.03) });
+    else play(it);
+  }
+  function stopAll() { playing.forEach(function (s) { try { s.stop(); } catch (e) {} }); playing = []; }
+  function fmt(s) { return s < 10 ? s.toFixed(2) + ' s' : s.toFixed(1) + ' s'; }
+  function render(it) {
+    var tr = it.row || (it.row = document.createElement('tr'));
+    var g = gainFor(it), peakAfter = it.peak + db(g), gainDb = db(g);
+    tr.innerHTML = '<td><button class="play">▶</button></td><td class="name" title="' + it.name + '">' + it.name + '</td><td class="num">' + fmt(it.buffer.duration) + '</td>' +
+      '<td class="num"><span class="meter"><i class="' + (peakAfter > -1 ? 'hot' : '') + '" style="width:' + Math.max(2, Math.min(100, (peakAfter + 40) * 2.5)) + '%"></i></span>' + it.rms.toFixed(1) + ' dB</td>' +
+      '<td class="num">' + (gainDb >= 0 ? '+' : '') + gainDb.toFixed(1) + ' dB</td>' +
+      '<td><select class="role">' + ROLES.map(function (r) { return '<option' + (r === it.role ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select></td>' +
+      '<td class="stars">' + [1, 2, 3, 4, 5].map(function (n) { return '<button data-n="' + n + '" class="' + (n <= it.rating ? 'on' : '') + '">★</button>'; }).join('') + '</td>' +
+      '<td><input class="source" type="text" placeholder="freesound.org/… · CC0" value="' + (it.source || '').replace(/"/g, '&quot;') + '"></td>' +
+      '<td><input class="notes" type="text" placeholder="too sharp, loop it, lovely…" value="' + (it.notes || '').replace(/"/g, '&quot;') + '"></td>';
+    tr.querySelector('.play').addEventListener('click', function () { playRole(it); });
+    tr.querySelector('.role').addEventListener('change', function (ev) { it.role = ev.target.value; save(); });
+    tr.querySelector('.source').addEventListener('input', function (ev) { it.source = ev.target.value; save(); });
+    tr.querySelector('.notes').addEventListener('input', function (ev) { it.notes = ev.target.value; save(); });
+    tr.querySelectorAll('.stars button').forEach(function (b) { b.addEventListener('click', function () { it.rating = +b.dataset.n; save(); render(it); }); });
+    if (!tr.parentNode) $('rows').appendChild(tr);
+  }
+  function add(file) {
+    var c = audio();
+    file.arrayBuffer().then(function (ab) { return c.decodeAudioData(ab); }).then(function (buf) {
+      var a = analyse(buf), s = saved[file.name] || {};
+      var it = { name: file.name, buffer: buf, rms: a.rms, peak: a.peak, role: s.role || guessRole(file.name), rating: s.rating || 0, source: s.source || '', notes: s.notes || '' };
+      items.push(it); items.sort(function (x, y) { return (x.role || '~').localeCompare(y.role || '~') || x.name.localeCompare(y.name); });
+      render(it); items.forEach(function (i) { $('rows').appendChild(i.row); });
+    }).catch(function (e) { console.warn('could not decode', file.name, e); });
+  }
+  function guessRole(n) { n = n.toLowerCase(); for (var i = 1; i < ROLES.length; i++) { var k = ROLES[i].split(' ')[0]; if (k.length > 3 && n.indexOf(k) >= 0) return ROLES[i]; } return ''; }
+  $('drop').addEventListener('click', function () { $('file').click(); });
+  $('file').addEventListener('change', function (ev) { Array.prototype.forEach.call(ev.target.files, add); });
+  ['dragenter', 'dragover'].forEach(function (t) { $('drop').addEventListener(t, function (ev) { ev.preventDefault(); $('drop').classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { $('drop').addEventListener(t, function (ev) { ev.preventDefault(); $('drop').classList.remove('over'); }); });
+  $('drop').addEventListener('drop', function (ev) { Array.prototype.forEach.call(ev.dataTransfer.files, function (f) { if (/^audio\//.test(f.type) || /\.(wav|ogg|mp3|flac|m4a)$/i.test(f.name)) add(f); }); });
+  $('target').addEventListener('input', function () { $('target-v').textContent = $('target').value + ' dBFS RMS'; items.forEach(render); });
+  $('master').addEventListener('input', function () { if (master) master.gain.value = +$('master').value; });
+  $('stop').addEventListener('click', stopAll);
+  $('export').addEventListener('click', function () {
+    var manifest = { target_rms_dbfs: +$('target').value, sounds: items.filter(function (it) { return it.role; }).map(function (it) { return { file: it.name, role: it.role, gain: +gainFor(it).toFixed(3), rating: it.rating, rms_dbfs: +it.rms.toFixed(1), peak_dbfs: +it.peak.toFixed(1), seconds: +it.buffer.duration.toFixed(2), source: it.source, notes: it.notes }; }) };
+    var text = JSON.stringify(manifest, null, 2);
+    $('manifest').value = text; $('manifest-wrap').hidden = false;
+    try { navigator.clipboard.writeText(text); } catch (e) { /* copy by hand from the box */ }
+    try { // a download where the page is allowed one; the box below is the fallback (and the phone path)
+      var blob = new Blob([text], { type: 'application/json' }), a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'sounds-manifest.json'; document.body.appendChild(a); a.click(); a.remove();
+    } catch (e) { /* no download here */ }
+  });
+  window.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') stopAll(); });
+})();
+</script>
+</body>
+</html>

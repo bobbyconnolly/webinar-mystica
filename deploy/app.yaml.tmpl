@@ -1,0 +1,62 @@
+# Container App definition; deploy.sh fills the @PLACEHOLDERS@.
+# One replica, always: the world lives in memory and this is a single-writer SQLite setup.
+location: @LOCATION@
+properties:
+  managedEnvironmentId: @ENV_ID@
+  configuration:
+    activeRevisionsMode: Single
+    ingress:
+      external: true
+      targetPort: 8080
+      transport: auto
+      allowInsecure: false
+    secrets:
+      - name: acr-password
+        value: "@ACR_PASS@"
+      - name: admin-token
+        value: "@ADMIN_TOKEN@"
+    registries:
+      - server: @ACR@.azurecr.io
+        username: @ACR_USER@
+        passwordSecretRef: acr-password
+  template:
+    containers:
+      - name: mystica
+        image: @IMAGE@
+        resources:
+          cpu: 0.25    # back to 0.25 on 2026-10-20 after the webinar (0.5 from 2026-10-18 for the crowd: fifty wandering players used two thirds of 0.25 in the rehearsal)
+          memory: 0.5Gi  # 1Gi for the webinar, 2026-10-18 to 2026-10-20
+        env:
+          - name: PORT
+            value: "8080"
+          - name: SEED
+            value: "@SEED@"
+          - name: DB_FILE
+            value: /tmp/mystica/world-@SEED@.sqlite
+          - name: MIRROR_DIR
+            value: /data
+          - name: FLUSH_EVERY
+            value: "5"
+          - name: ADMIN_TOKEN
+            secretRef: admin-token
+          - name: MAX_CLIENTS
+            value: "200"
+          - name: EVENT
+            value: "@EVENT@"
+        volumeMounts:
+          - volumeName: world
+            mountPath: /data
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+    scale:
+      minReplicas: 1
+      maxReplicas: 1
+    volumes:
+      - name: world
+        storageType: AzureFile
+        storageName: @STORAGE_NAME@
